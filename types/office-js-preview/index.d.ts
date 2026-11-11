@@ -531,7 +531,7 @@ declare namespace Office {
      * It's also supported in
      * {@link https://support.microsoft.com/office/656bb8d9-5a60-49b2-a98b-ba7822bc7627 | new Outlook on Windows}.
      *
-     * **Requirement set**: {@link https://learn.microsoft.com/javascript/api/requirement-sets/common/device-permission-service-requirement-sets | DevicePermission 1.1}
+     * **Requirement set**: {@link https://learn.microsoft.com/javascript/api/requirement-sets/common/device-permission-service-requirement-sets | DevicePermissionService 1.1}
      */
     enum DevicePermissionType {
         /**
@@ -5515,7 +5515,7 @@ declare namespace Office {
      * It's also supported in
      * {@link https://support.microsoft.com/office/656bb8d9-5a60-49b2-a98b-ba7822bc7627 | new Outlook on Windows}.
      *
-     * **Requirement set**: {@link https://learn.microsoft.com/javascript/api/requirement-sets/common/device-permission-service-requirement-sets | DevicePermission 1.1}
+     * **Requirement set**: {@link https://learn.microsoft.com/javascript/api/requirement-sets/common/device-permission-service-requirement-sets | DevicePermissionService 1.1}
      */
     interface DevicePermission {
         /**
@@ -5882,7 +5882,7 @@ declare namespace Office {
          *   <tr><th>                             </th><th> Office on the web      </th><th> Office on Windows                                          </th><th> Office on Mac                                              </th><th> Office on iPad                          </th></tr>
          *   <tr><td><strong> Excel      </strong></td><td><code>Pdf</code>        </td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td> Not supported                           </td></tr>
          *   <tr><td><strong> PowerPoint </strong></td><td><code>Compressed</code> </td><td><code>Compressed</code>, <code>Pdf</code>                   </td><td><code>Compressed</code>, <code>Pdf</code>                   </td><td><code>Compressed</code>, <code>Pdf</code></td></tr>
-         *   <tr><td><strong> Word       </strong></td><td> Not supported          </td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code></td></tr>
+         *   <tr><td><strong> Word       </strong></td><td><code>Compressed</code> </td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code></td></tr>
          *  </table>
          *
          * @param fileType The format in which the file will be returned
@@ -5917,7 +5917,7 @@ declare namespace Office {
          *   <tr><th>                             </th><th> Office on the web      </th><th> Office on Windows                                          </th><th> Office on Mac                                              </th><th> Office on iPad                          </th></tr>
          *   <tr><td><strong> Excel      </strong></td><td><code>Pdf</code>        </td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td> Not supported                           </td></tr>
          *   <tr><td><strong> PowerPoint </strong></td><td><code>Compressed</code> </td><td><code>Compressed</code>, <code>Pdf</code>                   </td><td><code>Compressed</code>, <code>Pdf</code>                   </td><td><code>Compressed</code>, <code>Pdf</code></td></tr>
-         *   <tr><td><strong> Word       </strong></td><td> Not supported          </td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code></td></tr>
+         *   <tr><td><strong> Word       </strong></td><td><code>Compressed</code> </td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code>, <code>Text</code></td><td><code>Compressed</code>, <code>Pdf</code></td></tr>
          *  </table>
          *
          * @param fileType The format in which the file will be returned
@@ -35765,7 +35765,7 @@ declare namespace Excel {
          */
         labelingEnabled = "LabelingEnabled",
         /**
-         * Attribute-based access control (ABAC) is supported by the host.
+         * Represents attribute-based access control (ABAC) being supported by the host. When returned with `labelingEnabled`, an add-in may use ABAC-specific APIs, such as `SensitivityLabelsCatalog.getAttributes`.
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
@@ -35781,7 +35781,7 @@ declare namespace Excel {
      */
     interface SensitivityLabelTryUpdateOptions {
         /**
-         * If provided, specifies the ABAC attributes to apply with the label.
+         * If provided, specifies the attribute-based access control (ABAC) attributes to apply with the label. Must be omitted or empty for labels that are not ABAC-enabled; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesNotAllowed`. Required when the target label is ABAC-enabled and `SensitivityLabelDetails.isAbacAttributesRequired` is `true`.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
@@ -35811,14 +35811,14 @@ declare namespace Excel {
          */
         getCurrentOrNullObject(): Excel.SensitivityLabelDetails;
         /**
-         * Tries to update to the provided sensitivity label on the workbook for the user.
+         * Tries to update to the provided sensitivity label on the workbook for the user. For ABAC-enabled labels, pass the desired attribute selections via `options.abacAttributes`.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          *
          * @param labelId The ID of the label to apply.
-         * @param options Optional. Additional inputs such as ABAC attributes.
+         * @param options Optional. Additional inputs that influence the update, such as ABAC attribute selections for ABAC-enabled labels.
          * @returns The `SensitivityLabelUpdateResult` object.
          */
         tryToUpdate(labelId: string, options?: Excel.SensitivityLabelTryUpdateOptions): OfficeExtension.ClientResult<Excel.SensitivityLabelUpdateResult>;
@@ -35841,37 +35841,21 @@ declare namespace Excel {
         /** The request context associated with the object. This connects the add-in's process to the Office host application's process. */
         context: RequestContext;
         /**
-         * Gets the ABAC (attribute-based access control) attribute values associated with this label.
+         * Gets the sublabels of the sensitivity label. The collection is empty if a label doesn't have any sublabels.
+         *
+         * @remarks
+         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        readonly children: Excel.SensitivityLabelDetailsCollection;
+        /**
+         * Gets the attribute-based access control (ABAC) attribute values currently applied to this sensitivity label. Returns an empty array when no ABAC attributes are applied or this label is not ABAC-enabled.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
         readonly abacAttributeValues: SensitivityLabelAbacAttributeValue[];
-        /**
-         * Gets a value indicating whether ABAC (attribute-based access control) attributes are required for this label.
-         *
-         * @remarks
-         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        readonly isAbacAttributesRequired: boolean;
-        /**
-         * Gets a value indicating whether ABAC (attribute-based access control) is enabled for this label.
-         *
-         * @remarks
-         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        readonly isAbacEnabled: boolean;
-        /**
-         * Gets the sublabels of the sensitivity label. Returns `null` if a label doesn't have any sublabels.
-         *
-         * @remarks
-         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        readonly children: SensitivityLabelDetailsCollection | null;
         /**
          * Gets the color of the sensitivity label.
          *
@@ -35888,6 +35872,22 @@ declare namespace Excel {
          * @beta
          */
         readonly id: string;
+        /**
+         * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesRequired`.
+         *
+         * @remarks
+         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        readonly isAbacAttributesRequired: boolean;
+        /**
+         * Gets whether this label is attribute-based access control (ABAC) enabled. Returns `false` when the host's labeling capabilities don't include `attributeBasedAccessControlEnabled`.
+         *
+         * @remarks
+         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        readonly isAbacEnabled: boolean;
         /**
          * Gets a value indicating whether the label is enabled.
          *
@@ -35992,7 +35992,7 @@ declare namespace Excel {
          * @beta
          * @returns The new `SensitivityLabelDetails` object.
          */
-        getFirstOrNullObject(): OfficeExtension.ClientResult<any>;
+        getFirstOrNullObject(): Excel.SensitivityLabelDetails;
         /**
          * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
          *
@@ -36092,13 +36092,13 @@ declare namespace Excel {
         dateValue = "DateValue"
     }
     /**
-     * Represents the result of updating the sensitivity label on the workbook.
+     * Represents the outcome status of an attempt to update the sensitivity label on the workbook.
      *
      * @remarks
      * [Api set: ExcelApi BETA (PREVIEW ONLY)]
      * @beta
      */
-    enum SensitivityLabelUpdateResult {
+    enum SensitivityLabelUpdateStatus {
         /**
          * The sensitivity label was successfully updated.
          * @remarks
@@ -36121,7 +36121,7 @@ declare namespace Excel {
          */
         labelNotFound = "LabelNotFound",
         /**
-         * The document is read-only and cannot be modified.
+         * The workbook is read-only and can't be modified.
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
@@ -36149,14 +36149,14 @@ declare namespace Excel {
          */
         labelingDisabled = "LabelingDisabled",
         /**
-         * The label update failed because the user's identity is not valid for applying a label.
+         * The label update failed because the user's identity couldn't be found during label application.
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
         userNotFound = "UserNotFound",
         /**
-         * The label update failed due to unsupported User Defined Permissions (UDP).
+         * The label update failed due to unsupported User-defined Permissions (UDP).
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
@@ -36177,26 +36177,57 @@ declare namespace Excel {
          */
         crossTenant = "CrossTenant",
         /**
-         * The label update failed because ABAC (attribute-based access control) is not supported.
+         * ABAC attribute values were supplied, but the target label is not ABAC-enabled.
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        unsupportedAbac = "UnsupportedAbac",
+        abacAttributesNotAllowed = "AbacAttributesNotAllowed",
         /**
-         * The label update failed because required ABAC (attribute-based access control) attributes are missing.
+         * The target label is ABAC-enabled and requires attribute selections, but no ABAC attribute values were supplied.
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
         abacAttributesRequired = "AbacAttributesRequired",
         /**
-         * The label update failed because removing the label is not supported.
+         * The label update failed due to unsupported attribute-based access control (ABAC).
+         * @remarks
+         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        unsupportedAbac = "UnsupportedAbac",
+        /**
+         * The label update failed because the specified label is disabled or not applicable to the user.
+         * @remarks
+         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        labelDisabled = "LabelDisabled",
+        /**
+         * The label update failed because removing the sensitivity label is not supported.
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
         removingLabelNotSupported = "RemovingLabelNotSupported"
+    }
+    /**
+     * Represents the result of an attempt to update the sensitivity label on the workbook. Carries the outcome status plus diagnostic information about why the update succeeded or failed.
+     *
+     * @remarks
+     * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+     * @beta
+     */
+    interface SensitivityLabelUpdateResult {
+        /**
+         * Gets the outcome status of the update attempt.
+         *
+         * @remarks
+         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        status: Excel.SensitivityLabelUpdateStatus | "Success" | "UnspecifiedFailure" | "LabelNotFound" | "DocumentReadOnly" | "InsufficientPermission" | "UnsupportedDoubleKeyEncryption" | "LabelingDisabled" | "UserNotFound" | "UnsupportedUdp" | "ParentLabelNotSupported" | "CrossTenant" | "AbacAttributesNotAllowed" | "AbacAttributesRequired" | "UnsupportedAbac" | "LabelDisabled" | "RemovingLabelNotSupported";
     }
     /**
      * Provides methods to check the status of the catalog of sensitivity labels in Excel and retrieve all available sensitivity labels if the catalog is enabled.
@@ -36209,7 +36240,7 @@ declare namespace Excel {
         /** The request context associated with the object. This connects the add-in's process to the Office host application's process. */
         context: RequestContext;
         /**
-         * Gets the labeling capabilities supported by Excel.
+         * Gets the labeling capabilities for Excel. Use `Array.includes` to determine whether a capability is available.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
@@ -36225,12 +36256,12 @@ declare namespace Excel {
          */
         readonly getLabelingCapability: Excel.LabelingCapability | "NoLicense" | "LabelingDisabled" | "LabelingPolicyNotFound" | "LabelingEnabled" | "AttributeBasedAccessControlEnabled";
         /**
-         * Gets the ABAC (attribute-based access control) attributes that are available to the current user.
+         * Gets the attribute-based access control (ABAC) attribute catalog metadata for ABAC-enabled labels. Verify the host's labeling capabilities include `attributeBasedAccessControlEnabled`; otherwise this method fails with an error.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
-         * @returns An array of `SensitivityLabelAbacAttribute` objects.
+         * @returns The available ABAC attributes for the current user.
          */
         getAttributes(): OfficeExtension.ClientResult<SensitivityLabelAbacAttribute[]>;
         /**
@@ -36270,158 +36301,102 @@ declare namespace Excel {
         toJSON(): Excel.Interfaces.SensitivityLabelsCatalogData;
     }
     /**
-     * Represents a single value of an ABAC (attribute-based access control) attribute.
+     * Represents a single selectable value of an attribute-based access control (ABAC) attribute that can be applied to a sensitivity label.
      *
      * @remarks
      * [Api set: ExcelApi BETA (PREVIEW ONLY)]
      * @beta
      */
-    class SensitivityLabelAbacAttributeValue extends OfficeExtension.ClientObject {
-        /** The request context associated with the object. This connects the add-in's process to the Office host application's process. */
-        context: RequestContext;
+    interface SensitivityLabelAbacAttributeValue {
         /**
-         * Gets the display name of the attribute value.
+         * Gets the display name of the ABAC attribute value. Add-ins are responsible for presenting localized user-facing UI.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly displayName: string;
+        displayName: string;
         /**
-         * Gets the display order of the attribute value.
+         * Gets the recommended ordering of this ABAC value within its attribute when displayed to a user.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly displayOrder: number;
+        displayOrder: number;
         /**
-         * Gets the unique identifier of the attribute value.
+         * Gets the unique identifier of the ABAC attribute value. This identifier is used when applying or updating the label's ABAC attribute selections.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly id: string;
+        id: string;
         /**
-         * Gets a value indicating whether the attribute value is active.
+         * Gets whether this ABAC attribute value is active. `true` if the value is active; otherwise, `false`.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly isActive: boolean;
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param options Provides options for which properties of the object to load.
-         */
-        load(options?: Excel.Interfaces.SensitivityLabelAbacAttributeValueLoadOptions): Excel.SensitivityLabelAbacAttributeValue;
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param propertyNames A comma-delimited string or an array of strings that specify the properties to load.
-         */
-        load(propertyNames?: string | string[]): Excel.SensitivityLabelAbacAttributeValue;
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param propertyNamesAndPaths `propertyNamesAndPaths.select` is a comma-delimited string that specifies the properties to load, and `propertyNamesAndPaths.expand` is a comma-delimited string that specifies the navigation properties to load.
-         */
-        load(propertyNamesAndPaths?: {
-            select?: string;
-            expand?: string;
-        }): Excel.SensitivityLabelAbacAttributeValue;
-        /**
-        * Overrides the JavaScript `toJSON()` method in order to provide more useful output when an API object is passed to `JSON.stringify()`. (`JSON.stringify`, in turn, calls the `toJSON` method of the object that's passed to it.)
-        * Whereas the original `Excel.SensitivityLabelAbacAttributeValue` object is an API object, the `toJSON` method returns a plain JavaScript object (typed as `Excel.Interfaces.SensitivityLabelAbacAttributeValueData`) that contains shallow copies of any loaded child properties from the original object.
-        */
-        toJSON(): Excel.Interfaces.SensitivityLabelAbacAttributeValueData;
+        isActive: boolean;
     }
     /**
-     * Represents an ABAC (attribute-based access control) attribute.
+     * Represents an attribute-based access control (ABAC) attribute available for selection on an ABAC-enabled sensitivity label.
      *
      * @remarks
      * [Api set: ExcelApi BETA (PREVIEW ONLY)]
      * @beta
      */
-    class SensitivityLabelAbacAttribute extends OfficeExtension.ClientObject {
-        /** The request context associated with the object. This connects the add-in's process to the Office host application's process. */
-        context: RequestContext;
+    interface SensitivityLabelAbacAttribute {
         /**
-         * Gets the data type of the attribute.
+         * Gets the data type of the ABAC attribute.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly dataType: Excel.SensitivityLabelAbacAttributeDataType | "Unknown" | "StringValue" | "BooleanValue" | "NumberValue" | "DateValue";
+        dataType: Excel.SensitivityLabelAbacAttributeDataType | "Unknown" | "StringValue" | "BooleanValue" | "NumberValue" | "DateValue";
         /**
-         * Gets the display name of the attribute.
+         * Gets the display name of the ABAC attribute. Add-ins are responsible for presenting localized user-facing UI.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly displayName: string;
+        displayName: string;
         /**
-         * Gets the display order of the attribute.
+         * Gets the recommended ordering of this ABAC attribute when displayed to a user.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly displayOrder: number;
+        displayOrder: number;
         /**
-         * Gets a value indicating whether the attribute is active.
+         * Gets whether this ABAC attribute is active. `true` if the attribute is active; otherwise, `false`.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly isActive: boolean;
+        isActive: boolean;
         /**
-         * Gets a value indicating whether the attribute supports multiple values.
+         * Gets whether more than one value can be selected for this ABAC attribute. `true` if multi-select; otherwise, `false`.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly isMultiValued: boolean;
+        isMultiValued: boolean;
         /**
-         * Gets the values of the attribute.
+         * Gets the values that are selectable for this ABAC attribute.
          *
          * @remarks
          * [Api set: ExcelApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly values: SensitivityLabelAbacAttributeValue[];
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param options Provides options for which properties of the object to load.
-         */
-        load(options?: Excel.Interfaces.SensitivityLabelAbacAttributeLoadOptions): Excel.SensitivityLabelAbacAttribute;
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param propertyNames A comma-delimited string or an array of strings that specify the properties to load.
-         */
-        load(propertyNames?: string | string[]): Excel.SensitivityLabelAbacAttribute;
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param propertyNamesAndPaths `propertyNamesAndPaths.select` is a comma-delimited string that specifies the properties to load, and `propertyNamesAndPaths.expand` is a comma-delimited string that specifies the navigation properties to load.
-         */
-        load(propertyNamesAndPaths?: {
-            select?: string;
-            expand?: string;
-        }): Excel.SensitivityLabelAbacAttribute;
-        /**
-        * Overrides the JavaScript `toJSON()` method in order to provide more useful output when an API object is passed to `JSON.stringify()`. (`JSON.stringify`, in turn, calls the `toJSON` method of the object that's passed to it.)
-        * Whereas the original `Excel.SensitivityLabelAbacAttribute` object is an API object, the `toJSON` method returns a plain JavaScript object (typed as `Excel.Interfaces.SensitivityLabelAbacAttributeData`) that contains shallow copies of any loaded child properties from the original object.
-        */
-        toJSON(): Excel.Interfaces.SensitivityLabelAbacAttributeData;
+        values: SensitivityLabelAbacAttributeValue[];
     }
     /**
      * Represents an `AllowEditRange` object found in a worksheet. This object works with worksheet protection properties.
@@ -36645,7 +36620,7 @@ declare namespace Excel {
     }
     /**
      * Notifies when a worksheet is moved within a workbook.
-
+                
                  If a worksheet is moved from one position within the workbook to another
                  via the Excel UI, then this API will trigger an event. Note that if
                  the position of a worksheet changes as a result of moving a different worksheet,
@@ -37188,7 +37163,7 @@ declare namespace Excel {
         unknown = "Unknown",
         /**
          * Equals comparator criterion.
-
+                    
                      Required Criteria: {`comparator`}.
                      Optional Criteria: {`wholeDays`, `exclusive`}.
          * @remarks
@@ -37197,7 +37172,7 @@ declare namespace Excel {
         equals = "Equals",
         /**
          * Date is before comparator date.
-
+                    
                      Required Criteria: {`comparator`}.
                      Optional Criteria: {`wholeDays`}.
          * @remarks
@@ -37206,7 +37181,7 @@ declare namespace Excel {
         before = "Before",
         /**
          * Date is before or equal to comparator date.
-
+                    
                      Required Criteria: {`comparator`}.
                      Optional Criteria: {`wholeDays`}.
          * @remarks
@@ -37215,7 +37190,7 @@ declare namespace Excel {
         beforeOrEqualTo = "BeforeOrEqualTo",
         /**
          * Date is after comparator date.
-
+                    
                      Required Criteria: {`comparator`}.
                      Optional Criteria: {`wholeDays`}.
          * @remarks
@@ -37224,7 +37199,7 @@ declare namespace Excel {
         after = "After",
         /**
          * Date is after or equal to comparator date.
-
+                    
                      Required Criteria: {`comparator`}.
                      Optional Criteria: {`wholeDays`}.
          * @remarks
@@ -37233,7 +37208,7 @@ declare namespace Excel {
         afterOrEqualTo = "AfterOrEqualTo",
         /**
          * Between `lowerBound` and `upperBound` dates.
-
+                    
                      Required Criteria: {`lowerBound`, `upperBound`}.
                      Optional Criteria: {`wholeDays`, `exclusive`}.
          * @remarks
@@ -37450,7 +37425,7 @@ declare namespace Excel {
         unknown = "Unknown",
         /**
          * Equals comparator criterion.
-
+                    
                      Required Criteria: {`comparator`}.
                      Optional Criteria: {`exclusive`}.
          * @remarks
@@ -37459,7 +37434,7 @@ declare namespace Excel {
         equals = "Equals",
         /**
          * Label begins with substring criterion.
-
+                    
                      Required Criteria: {`substring`}.
                      Optional Criteria: {`exclusive`}.
          * @remarks
@@ -37468,7 +37443,7 @@ declare namespace Excel {
         beginsWith = "BeginsWith",
         /**
          * Label ends with substring criterion.
-
+                    
                      Required Criteria: {`substring`}.
                      Optional Criteria: {`exclusive`}.
          * @remarks
@@ -37477,7 +37452,7 @@ declare namespace Excel {
         endsWith = "EndsWith",
         /**
          * Label contains substring criterion.
-
+                    
                      Required Criteria: {`substring`}.
                      Optional Criteria: {`exclusive`}.
          * @remarks
@@ -37486,7 +37461,7 @@ declare namespace Excel {
         contains = "Contains",
         /**
          * Greater than comparator criterion.
-
+                    
                      Required Criteria: {`comparator`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37494,7 +37469,7 @@ declare namespace Excel {
         greaterThan = "GreaterThan",
         /**
          * Greater than or equal to comparator criterion.
-
+                    
                      Required Criteria: {`comparator`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37502,7 +37477,7 @@ declare namespace Excel {
         greaterThanOrEqualTo = "GreaterThanOrEqualTo",
         /**
          * Less than comparator criterion.
-
+                    
                      Required Criteria: {`comparator`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37510,7 +37485,7 @@ declare namespace Excel {
         lessThan = "LessThan",
         /**
          * Less than or equal to comparator criterion.
-
+                    
                      Required Criteria: {`comparator`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37518,7 +37493,7 @@ declare namespace Excel {
         lessThanOrEqualTo = "LessThanOrEqualTo",
         /**
          * Between `lowerBound` and `upperBound` criteria.
-
+                    
                      Required Criteria: {`lowerBound`, `upperBound`}.
                      Optional Criteria: {`exclusive`}.
          * @remarks
@@ -37832,7 +37807,7 @@ declare namespace Excel {
         unknown = "Unknown",
         /**
          * Equals comparator criterion.
-
+                    
                      Required Criteria: {`value`, `comparator`}.
                      Optional Criteria: {`exclusive`}.
          * @remarks
@@ -37841,7 +37816,7 @@ declare namespace Excel {
         equals = "Equals",
         /**
          * Greater than comparator criterion.
-
+                    
                      Required Criteria: {`value`, `comparator`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37849,7 +37824,7 @@ declare namespace Excel {
         greaterThan = "GreaterThan",
         /**
          * Greater than or equal to comparator criterion.
-
+                    
                      Required Criteria: {`value`, `comparator`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37857,7 +37832,7 @@ declare namespace Excel {
         greaterThanOrEqualTo = "GreaterThanOrEqualTo",
         /**
          * Less than comparator criterion.
-
+                    
                      Required Criteria: {`value`, `comparator`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37865,7 +37840,7 @@ declare namespace Excel {
         lessThan = "LessThan",
         /**
          * Less than or equal to comparator criterion.
-
+                    
                      Required Criteria: {`value`, `comparator`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37873,7 +37848,7 @@ declare namespace Excel {
         lessThanOrEqualTo = "LessThanOrEqualTo",
         /**
          * Between `lowerBound` and `upperBound` criteria.
-
+                    
                      Required Criteria: {`value`, `lowerBound`, `upperBound`}.
                      Optional Criteria: {`exclusive`}.
          * @remarks
@@ -37882,7 +37857,7 @@ declare namespace Excel {
         between = "Between",
         /**
          * In top N (`threshold`) [items, percent, sum] of value category.
-
+                    
                      Required Criteria: {`value`, `threshold`, `selectionType`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37890,7 +37865,7 @@ declare namespace Excel {
         topN = "TopN",
         /**
          * In bottom N (`threshold`) [items, percent, sum] of value category.
-
+                    
                      Required Criteria: {`value`, `threshold`, `selectionType`}.
          * @remarks
          * [Api set: ExcelApi 1.12]
@@ -37937,7 +37912,7 @@ declare namespace Excel {
     }
     /**
      * Provides information about the selection that raised the selection changed event.
-
+                
                  **Note**: If multiple, discontiguous cells are selected, `Binding.onSelectionChanged` only reports row and column information for one selection. Use `Worksheet.onSelectionChanged` for multiple selected ranges.
      *
      * @remarks
@@ -38417,9 +38392,10 @@ declare namespace Excel {
     interface WorksheetFormulaChangedEventArgs {
         /**
          * Gets an array of `FormulaChangedEventDetail` objects, which contain the details about the all of the changed formulas.
-
-                    If the number of changed formulas or the size of the changed formula text exceeds a size limit, `formulaDetails`
-                    returns undefined. This indicates that something on the sheet has changed, but the details cannot be reported.
+                    
+                     If the number of changed formulas or the size of the changed formula text exceeds a size limit, the `formulaDetails`
+                     will be undefined, which indicates that something on the sheet has changed, but the details cannot be reported due to
+                     these limits.
          *
          * @remarks
          * [Api set: ExcelApi 1.13]
@@ -39436,7 +39412,7 @@ declare namespace Excel {
         suspendApiCalculationUntilNextSync(): void;
         /**
          * Suspends screen updating until the next `context.sync()` is called.
-
+                    
                      **Note**: Don't call `suspendScreenUpdatingUntilNextSync` repeatedly (such as in a loop). Repeated calls will cause the Excel window to flicker.
          *
          * @remarks
@@ -39908,7 +39884,7 @@ declare namespace Excel {
         getSelectedRanges(): Excel.RangeAreas;
         /**
          * Inserts the specified worksheets from a source workbook into the current workbook.
-
+                    
                      The `extensionHardening` Windows registry key affects this API. The file extension defined by the `base64File` param must match the real file type of the inserted file. If `extensionHardening` is set to deny mismatches and the file extension does not match the real file type, this API throws the following error: "This operation is not allowed due to the extension hardening policy."
          *
          * @remarks
@@ -40603,8 +40579,9 @@ declare namespace Excel {
         /**
          * Occurs when one or more formulas are changed in this worksheet. This event is for when the formula itself changes, not the data value resulting from the formula's calculation.
 
-                The event is only triggered when the cell already contains a formula.
-                The new cell value may not include a formula. This event is not triggered when a formula is entered into a cell that did not previously contain a formula.
+                     The event is only triggered when the cell already contains a formula.
+
+                     The new cell value may not include a formula. This event is not triggered when a formula is entered into a cell that did not previously contain a formula.
          *
          * @remarks
          * [Api set: ExcelApi 1.13]
@@ -41591,8 +41568,8 @@ declare namespace Excel {
         readonly valueTypes: Excel.RangeValueType[][];
         /**
          * Represents the raw values of the specified range. The data returned could be a string, number, or Boolean. Cells that contain an error will return the error string.
-                If the returned value starts with a plus ("+"), minus ("-"), or equal sign ("="), Excel interprets this value as a formula.
-                Locale-shaped strings (such as the date "19-8-2025" in nl-NL or fr-FR, format DD-MM-YYYY) are stored as text instead of as dates. To ensure dates are stored as dates, use a locale-aware API like `formulasLocal` or use a locale-neutral format like ISO (YYYY-MM-DD) or a numeric date serial.
+                    If the returned value starts with a plus ("+"), minus ("-"), or equal sign ("="), Excel interprets this value as a formula.
+                    Locale-shaped strings (such as the date "19-8-2025" in nl-NL or fr-FR, format DD-MM-YYYY) are stored as text instead of as dates. To ensure dates are stored as dates, use a locale-aware API like `formulasLocal` or use a locale-neutral format like ISO (YYYY-MM-DD) or a numeric date serial.
          *
          * @remarks
          * [Api set: ExcelApi 1.1]
@@ -41635,7 +41612,7 @@ declare namespace Excel {
          * Fills a range from the current range to the destination range using the specified AutoFill logic.
                      The destination range can be `null` or can extend the source range either horizontally or vertically.
                      Discontiguous ranges are not supported.
-
+                    
                      For more information, see {@link https://support.microsoft.com/office/2e79a709-c814-4b27-8bc2-c4dc84d49464 | Use AutoFill and Flash Fill}.
          *
          * @remarks
@@ -41649,7 +41626,7 @@ declare namespace Excel {
          * Fills a range from the current range to the destination range using the specified AutoFill logic.
                      The destination range can be `null` or can extend the source range either horizontally or vertically.
                      Discontiguous ranges are not supported.
-
+                    
                      For more information, see {@link https://support.microsoft.com/office/2e79a709-c814-4b27-8bc2-c4dc84d49464 | Use AutoFill and Flash Fill}.
          *
          * @remarks
@@ -44191,7 +44168,7 @@ declare namespace Excel {
         readonly onDataChanged: OfficeExtension.EventHandlers<Excel.BindingDataChangedEventArgs>;
         /**
          * Occurs when the selected content in the binding is changed.
-
+                    
                      **Note**: If multiple, discontiguous cells are selected, `Binding.onSelectionChanged` only reports row and column information for one selection. Use `Worksheet.onSelectionChanged` for multiple selected ranges.
          *
          * @remarks
@@ -44611,7 +44588,7 @@ declare namespace Excel {
         readonly legacyId: string;
         /**
          * Name of the table.
-
+                    
                      The set name of the table must follow the guidelines specified in the {@link https://support.microsoft.com/office/fbf49a4f-82a3-43eb-8ba2-44d21233b114 | Rename an Excel table} article.
          *
          * @remarks
@@ -45014,7 +44991,7 @@ declare namespace Excel {
     }
     /**
      * Represents a collection of all the rows that are part of the table.
-
+                
                  Note that unlike ranges or columns, which will adjust if new rows or columns are added before them,
                  a `TableRow` object represents the physical location of the table row, but not the data.
                  That is, if the data is sorted or if new rows are added, a table row will continue
@@ -45037,7 +45014,7 @@ declare namespace Excel {
         readonly count: number;
         /**
          * Adds one or more rows to the table. The return object will be the top of the newly added row(s).
-
+                    
                      Note that unlike ranges or columns, which will adjust if new rows or columns are added before them,
                      a `TableRow` object represents the physical location of the table row, but not the data.
                      That is, if the data is sorted or if new rows are added, a table row will continue
@@ -45054,7 +45031,7 @@ declare namespace Excel {
         /**
          * Adds one or more rows to the table. The returned object will be the top row of the newly added row or rows.
                      Unlike `add()`, `addAsJson()` takes any type of cell value, such as image or entity data types.
-
+                    
                      Note that unlike ranges or columns, which will adjust if new rows or columns are added before them,
                      a `TableRow` object represents the physical location of the table row, but not the data.
                      That is, if the data is sorted or if new rows are added, a table row will continue
@@ -45099,7 +45076,7 @@ declare namespace Excel {
         getCount(): OfficeExtension.ClientResult<number>;
         /**
          * Gets a row based on its position in the collection.
-
+                    
                      Note that unlike ranges or columns, which will adjust if new rows or columns are added before them,
                      a `TableRow` object represents the physical location of the table row, but not the data.
                      That is, if the data is sorted or if new rows are added, a table row will continue
@@ -45137,7 +45114,7 @@ declare namespace Excel {
     }
     /**
      * Represents a row in a table.
-
+                
                  Note that unlike ranges or columns, which will adjust if new rows or columns are added before them,
                  a `TableRow` object represents the physical location of the table row, but not the data.
                  That is, if the data is sorted or if new rows are added, a table row will continue
@@ -47331,29 +47308,32 @@ declare namespace Excel {
          * Sets the bubble sizes for a chart series. Only works for bubble charts.
          *
          * @remarks
-         * [Api set: ExcelApi 1.7]
+         * [Api set: ExcelApi 1.7 for the Range overload; 1.21 for the formula string overload.]
          *
-         * @param sourceData The `Range` object corresponding to the source data.
+         * @param sourceData A `Range` or, in ApiSet 1.21, a string in en-US chart data-reference syntax. The string can contain a cell or table reference,
+         * a defined name, or a numeric literal or array. An empty string or `=` is invalid.
          */
-        setBubbleSizes(sourceData: Range): void;
+        setBubbleSizes(sourceData: Range | string): void;
         /**
          * Sets the values for a chart series. For scatter charts, it refers to y-axis values.
          *
          * @remarks
-         * [Api set: ExcelApi 1.7]
+         * [Api set: ExcelApi 1.7 for the Range overload; 1.21 for the formula string overload.]
          *
-         * @param sourceData The `Range` object corresponding to the source data.
+         * @param sourceData A `Range` or, in ApiSet 1.21, a string in en-US chart data-reference syntax. The string can contain a cell or table reference,
+         * a defined name, or a literal value or array. An empty string or `=` is invalid.
          */
-        setValues(sourceData: Range): void;
+        setValues(sourceData: Range | string): void;
         /**
          * Sets the values of the x-axis for a chart series.
          *
          * @remarks
-         * [Api set: ExcelApi 1.7]
+         * [Api set: ExcelApi 1.7 for the Range overload; 1.21 for the formula string overload.]
          *
-         * @param sourceData The `Range` object corresponding to the source data.
+         * @param sourceData A `Range` or, in ApiSet 1.21, a string in en-US chart data-reference syntax. The string can contain a cell or table reference,
+         * a defined name, or a literal value or array. An empty string or `=` clears the categories.
          */
-        setXAxisValues(sourceData: Range): void;
+        setXAxisValues(sourceData: Range | string): void;
         /**
          * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
          *
@@ -51442,7 +51422,7 @@ declare namespace Excel {
         /**
          * The first criterion used to filter data. Used as an operator in the case of `custom` filtering.
                      For example ">50" for numbers greater than 50, or "=*s" for values ending in "s".
-
+                    
                      Used as a number in the case of top/bottom items/percents (e.g., "5" for the top 5 items if `filterOn` is set to `topItems`).
          *
          * @remarks
@@ -52415,7 +52395,7 @@ declare namespace Excel {
         context: RequestContext;
         /**
          * The alt text description of the PivotTable.
-
+                    
                      Alt text provides alternative, text-based representations of the information contained in the PivotTable.
                      This information is useful for people with vision or cognitive impairments who may not be able to see or understand the table.
                      A title can be read to a person with a disability and is used to determine whether they wish to hear the description of the content.
@@ -52426,7 +52406,7 @@ declare namespace Excel {
         altTextDescription: string;
         /**
          * The alt text title of the PivotTable.
-
+                    
                      Alt text provides alternative, text-based representations of the information contained in the PivotTable.
                      This information is useful for people with vision or cognitive impairments who may not be able to see or understand the table.
                      A title can be read to a person with a disability and is used to determine whether they wish to hear the description of the content.
@@ -65552,7 +65532,7 @@ declare namespace Excel {
         /**
          * LinkedEntityCellValueLoaded represents the type of event registered when the `LinkedEntityCellValue` object requested by `LoadLinkedEntityCellValue` method is loaded.
          * @remarks
-         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+         * [Api set: ExcelApi 1.21]
          */
         linkedEntityDataDomainLinkedEntityCellValueLoaded = "LinkedEntityDataDomainLinkedEntityCellValueLoaded"
     }
@@ -73607,7 +73587,7 @@ declare namespace Excel {
             highlightLastColumn?: boolean;
             /**
              * Name of the table.
-
+                        
                          The set name of the table must follow the guidelines specified in the {@link https://support.microsoft.com/office/fbf49a4f-82a3-43eb-8ba2-44d21233b114 | Rename an Excel table} article.
              *
              * @remarks
@@ -76210,7 +76190,7 @@ declare namespace Excel {
         interface PivotLayoutUpdateData {
             /**
              * The alt text description of the PivotTable.
-
+                        
                          Alt text provides alternative, text-based representations of the information contained in the PivotTable.
                          This information is useful for people with vision or cognitive impairments who may not be able to see or understand the table.
                          A title can be read to a person with a disability and is used to determine whether they wish to hear the description of the content.
@@ -76221,7 +76201,7 @@ declare namespace Excel {
             altTextDescription?: string;
             /**
              * The alt text title of the PivotTable.
-
+                        
                          Alt text provides alternative, text-based representations of the information contained in the PivotTable.
                          This information is useful for people with vision or cognitive impairments who may not be able to see or understand the table.
                          A title can be read to a person with a disability and is used to determine whether they wish to hear the description of the content.
@@ -78580,37 +78560,21 @@ declare namespace Excel {
         /** An interface describing the data returned by calling `sensitivityLabelDetails.toJSON()`. */
         interface SensitivityLabelDetailsData {
             /**
-             * Gets the ABAC (attribute-based access control) attribute values associated with this label.
+            * Gets the sublabels of the sensitivity label. The collection is empty if a label doesn't have any sublabels.
+            *
+            * @remarks
+            * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+            * @beta
+            */
+            children?: Excel.Interfaces.SensitivityLabelDetailsData[];
+            /**
+             * Gets the attribute-based access control (ABAC) attribute values currently applied to this sensitivity label. Returns an empty array when no ABAC attributes are applied or this label is not ABAC-enabled.
              *
              * @remarks
              * [Api set: ExcelApi BETA (PREVIEW ONLY)]
              * @beta
              */
             abacAttributeValues?: SensitivityLabelAbacAttributeValue[];
-            /**
-             * Gets a value indicating whether ABAC (attribute-based access control) attributes are required for this label.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isAbacAttributesRequired?: boolean;
-            /**
-             * Gets a value indicating whether ABAC (attribute-based access control) is enabled for this label.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isAbacEnabled?: boolean;
-            /**
-             * Gets the sublabels of the sensitivity label. Returns `null` if a label doesn't have any sublabels.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            children?: SensitivityLabelDetailsCollection | null;
             /**
              * Gets the color of the sensitivity label.
              *
@@ -78627,6 +78591,22 @@ declare namespace Excel {
              * @beta
              */
             id?: string;
+            /**
+             * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesRequired`.
+             *
+             * @remarks
+             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+             * @beta
+             */
+            isAbacAttributesRequired?: boolean;
+            /**
+             * Gets whether this label is attribute-based access control (ABAC) enabled. Returns `false` when the host's labeling capabilities don't include `attributeBasedAccessControlEnabled`.
+             *
+             * @remarks
+             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+             * @beta
+             */
+            isAbacEnabled?: boolean;
             /**
              * Gets a value indicating whether the label is enabled.
              *
@@ -78683,7 +78663,7 @@ declare namespace Excel {
         /** An interface describing the data returned by calling `sensitivityLabelsCatalog.toJSON()`. */
         interface SensitivityLabelsCatalogData {
             /**
-             * Gets the labeling capabilities supported by Excel.
+             * Gets the labeling capabilities for Excel. Use `Array.includes` to determine whether a capability is available.
              *
              * @remarks
              * [Api set: ExcelApi BETA (PREVIEW ONLY)]
@@ -78698,92 +78678,6 @@ declare namespace Excel {
              * @beta
              */
             getLabelingCapability?: Excel.LabelingCapability | "NoLicense" | "LabelingDisabled" | "LabelingPolicyNotFound" | "LabelingEnabled" | "AttributeBasedAccessControlEnabled";
-        }
-        /** An interface describing the data returned by calling `sensitivityLabelAbacAttributeValue.toJSON()`. */
-        interface SensitivityLabelAbacAttributeValueData {
-            /**
-             * Gets the display name of the attribute value.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayName?: string;
-            /**
-             * Gets the display order of the attribute value.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayOrder?: number;
-            /**
-             * Gets the unique identifier of the attribute value.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            id?: string;
-            /**
-             * Gets a value indicating whether the attribute value is active.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isActive?: boolean;
-        }
-        /** An interface describing the data returned by calling `sensitivityLabelAbacAttribute.toJSON()`. */
-        interface SensitivityLabelAbacAttributeData {
-            /**
-             * Gets the data type of the attribute.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            dataType?: Excel.SensitivityLabelAbacAttributeDataType | "Unknown" | "StringValue" | "BooleanValue" | "NumberValue" | "DateValue";
-            /**
-             * Gets the display name of the attribute.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayName?: string;
-            /**
-             * Gets the display order of the attribute.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayOrder?: number;
-            /**
-             * Gets a value indicating whether the attribute is active.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isActive?: boolean;
-            /**
-             * Gets a value indicating whether the attribute supports multiple values.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isMultiValued?: boolean;
-            /**
-             * Gets the values of the attribute.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            values?: SensitivityLabelAbacAttributeValue[];
         }
         /** An interface describing the data returned by calling `allowEditRange.toJSON()`. */
         interface AllowEditRangeData {
@@ -80154,7 +80048,7 @@ declare namespace Excel {
             legacyId?: string;
             /**
              * Name of the table.
-
+                        
                          The set name of the table must follow the guidelines specified in the {@link https://support.microsoft.com/office/fbf49a4f-82a3-43eb-8ba2-44d21233b114 | Rename an Excel table} article.
              *
              * @remarks
@@ -83215,7 +83109,7 @@ declare namespace Excel {
         interface PivotLayoutData {
             /**
              * The alt text description of the PivotTable.
-
+                        
                          Alt text provides alternative, text-based representations of the information contained in the PivotTable.
                          This information is useful for people with vision or cognitive impairments who may not be able to see or understand the table.
                          A title can be read to a person with a disability and is used to determine whether they wish to hear the description of the content.
@@ -83226,7 +83120,7 @@ declare namespace Excel {
             altTextDescription?: string;
             /**
              * The alt text title of the PivotTable.
-
+                        
                          Alt text provides alternative, text-based representations of the information contained in the PivotTable.
                          This information is useful for people with vision or cognitive impairments who may not be able to see or understand the table.
                          A title can be read to a person with a disability and is used to determine whether they wish to hear the description of the content.
@@ -86236,37 +86130,13 @@ declare namespace Excel {
              */
             $all?: boolean;
             /**
-             * Gets the ABAC (attribute-based access control) attribute values associated with this label.
+             * Gets the attribute-based access control (ABAC) attribute values currently applied to this sensitivity label. Returns an empty array when no ABAC attributes are applied or this label is not ABAC-enabled.
              *
              * @remarks
              * [Api set: ExcelApi BETA (PREVIEW ONLY)]
              * @beta
              */
             abacAttributeValues?: boolean;
-            /**
-             * Gets a value indicating whether ABAC (attribute-based access control) attributes are required for this label.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isAbacAttributesRequired?: boolean;
-            /**
-             * Gets a value indicating whether ABAC (attribute-based access control) is enabled for this label.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isAbacEnabled?: boolean;
-            /**
-             * Gets the sublabels of the sensitivity label. Returns `null` if a label doesn't have any sublabels.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            children?: boolean;
             /**
              * Gets the color of the sensitivity label.
              *
@@ -86283,6 +86153,22 @@ declare namespace Excel {
              * @beta
              */
             id?: boolean;
+            /**
+             * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesRequired`.
+             *
+             * @remarks
+             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+             * @beta
+             */
+            isAbacAttributesRequired?: boolean;
+            /**
+             * Gets whether this label is attribute-based access control (ABAC) enabled. Returns `false` when the host's labeling capabilities don't include `attributeBasedAccessControlEnabled`.
+             *
+             * @remarks
+             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
+             * @beta
+             */
+            isAbacEnabled?: boolean;
             /**
              * Gets a value indicating whether the label is enabled.
              *
@@ -86345,21 +86231,13 @@ declare namespace Excel {
              */
             $all?: boolean;
             /**
-             * For EACH ITEM in the collection: Gets the ABAC (attribute-based access control) attribute values associated with this label.
+             * For EACH ITEM in the collection: Gets the attribute-based access control (ABAC) attribute values currently applied to this sensitivity label. Returns an empty array when no ABAC attributes are applied or this label is not ABAC-enabled.
              *
              * @remarks
              * [Api set: ExcelApi BETA (PREVIEW ONLY)]
              * @beta
              */
             abacAttributeValues?: boolean;
-            /**
-             * For EACH ITEM in the collection: Gets the sublabels of the sensitivity label. Returns `null` if a label doesn't have any sublabels.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            children?: boolean;
             /**
              * For EACH ITEM in the collection: Gets the color of the sensitivity label.
              *
@@ -86377,7 +86255,7 @@ declare namespace Excel {
              */
             id?: boolean;
             /**
-             * For EACH ITEM in the collection: Gets a value indicating whether ABAC (attribute-based access control) attributes are required for this label.
+             * For EACH ITEM in the collection: Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesRequired`.
              *
              * @remarks
              * [Api set: ExcelApi BETA (PREVIEW ONLY)]
@@ -86385,7 +86263,7 @@ declare namespace Excel {
              */
             isAbacAttributesRequired?: boolean;
             /**
-             * For EACH ITEM in the collection: Gets a value indicating whether ABAC (attribute-based access control) is enabled for this label.
+             * For EACH ITEM in the collection: Gets whether this label is attribute-based access control (ABAC) enabled. Returns `false` when the host's labeling capabilities don't include `attributeBasedAccessControlEnabled`.
              *
              * @remarks
              * [Api set: ExcelApi BETA (PREVIEW ONLY)]
@@ -86454,7 +86332,7 @@ declare namespace Excel {
              */
             $all?: boolean;
             /**
-             * Gets the labeling capabilities supported by Excel.
+             * Gets the labeling capabilities for Excel. Use `Array.includes` to determine whether a capability is available.
              *
              * @remarks
              * [Api set: ExcelApi BETA (PREVIEW ONLY)]
@@ -86469,112 +86347,6 @@ declare namespace Excel {
              * @beta
              */
             getLabelingCapability?: boolean;
-        }
-        /**
-         * Represents a single value of an ABAC (attribute-based access control) attribute.
-         *
-         * @remarks
-         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        interface SensitivityLabelAbacAttributeValueLoadOptions {
-            /**
-              Specifying `$all` for the load options loads all the scalar properties (such as `Range.address`) but not the navigational properties (such as `Range.format.fill.color`).
-             */
-            $all?: boolean;
-            /**
-             * Gets the display name of the attribute value.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayName?: boolean;
-            /**
-             * Gets the display order of the attribute value.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayOrder?: boolean;
-            /**
-             * Gets the unique identifier of the attribute value.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            id?: boolean;
-            /**
-             * Gets a value indicating whether the attribute value is active.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isActive?: boolean;
-        }
-        /**
-         * Represents an ABAC (attribute-based access control) attribute.
-         *
-         * @remarks
-         * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        interface SensitivityLabelAbacAttributeLoadOptions {
-            /**
-              Specifying `$all` for the load options loads all the scalar properties (such as `Range.address`) but not the navigational properties (such as `Range.format.fill.color`).
-             */
-            $all?: boolean;
-            /**
-             * Gets the data type of the attribute.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            dataType?: boolean;
-            /**
-             * Gets the display name of the attribute.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayName?: boolean;
-            /**
-             * Gets the display order of the attribute.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayOrder?: boolean;
-            /**
-             * Gets a value indicating whether the attribute is active.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isActive?: boolean;
-            /**
-             * Gets a value indicating whether the attribute supports multiple values.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isMultiValued?: boolean;
-            /**
-             * Gets the values of the attribute.
-             *
-             * @remarks
-             * [Api set: ExcelApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            values?: boolean;
         }
         /**
          * Represents an `AllowEditRange` object found in a worksheet. This object works with worksheet protection properties.
@@ -88431,7 +88203,7 @@ declare namespace Excel {
             legacyId?: boolean;
             /**
              * For EACH ITEM in the collection: Name of the table.
-
+                        
                          The set name of the table must follow the guidelines specified in the {@link https://support.microsoft.com/office/fbf49a4f-82a3-43eb-8ba2-44d21233b114 | Rename an Excel table} article.
              *
              * @remarks
@@ -88557,7 +88329,7 @@ declare namespace Excel {
             legacyId?: boolean;
             /**
              * For EACH ITEM in the collection: Name of the table.
-
+                        
                          The set name of the table must follow the guidelines specified in the {@link https://support.microsoft.com/office/fbf49a4f-82a3-43eb-8ba2-44d21233b114 | Rename an Excel table} article.
              *
              * @remarks
@@ -88684,7 +88456,7 @@ declare namespace Excel {
             legacyId?: boolean;
             /**
              * Name of the table.
-
+                        
                          The set name of the table must follow the guidelines specified in the {@link https://support.microsoft.com/office/fbf49a4f-82a3-43eb-8ba2-44d21233b114 | Rename an Excel table} article.
              *
              * @remarks
@@ -88868,7 +88640,7 @@ declare namespace Excel {
         }
         /**
          * Represents a collection of all the rows that are part of the table.
-
+                    
                      Note that unlike ranges or columns, which will adjust if new rows or columns are added before them,
                      a `TableRow` object represents the physical location of the table row, but not the data.
                      That is, if the data is sorted or if new rows are added, a table row will continue
@@ -88918,7 +88690,7 @@ declare namespace Excel {
         }
         /**
          * Represents a row in a table.
-
+                    
                      Note that unlike ranges or columns, which will adjust if new rows or columns are added before them,
                      a `TableRow` object represents the physical location of the table row, but not the data.
                      That is, if the data is sorted or if new rows are added, a table row will continue
@@ -93296,7 +93068,7 @@ declare namespace Excel {
             $all?: boolean;
             /**
              * The alt text description of the PivotTable.
-
+                        
                          Alt text provides alternative, text-based representations of the information contained in the PivotTable.
                          This information is useful for people with vision or cognitive impairments who may not be able to see or understand the table.
                          A title can be read to a person with a disability and is used to determine whether they wish to hear the description of the content.
@@ -93307,7 +93079,7 @@ declare namespace Excel {
             altTextDescription?: boolean;
             /**
              * The alt text title of the PivotTable.
-
+                        
                          Alt text provides alternative, text-based representations of the information contained in the PivotTable.
                          This information is useful for people with vision or cognitive impairments who may not be able to see or understand the table.
                          A title can be read to a person with a disability and is used to determine whether they wish to hear the description of the content.
@@ -99016,7 +98788,6 @@ declare namespace Excel {
 }
 
 
-
 ////////////////////////////////////////////////////////////////
 //////////////////////// End Excel APIs ////////////////////////
 ////////////////////////////////////////////////////////////////
@@ -100200,6 +99971,8 @@ declare namespace Word {
          *
          * Insertion isn't supported if the document being inserted contains an ActiveX control (likely in a form field). Consider replacing such a form field with a content control or other option appropriate for your scenario.
          *
+         * Insertion isn't supported if the document being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
+         *
          * Document settings aren't preserved when inserting a document.
          *
          * @param base64File The Base64-encoded content of a .docx file.
@@ -100231,6 +100004,8 @@ declare namespace Word {
          *
          * @remarks
          * [Api set: WordApi 1.1]
+         *
+         * Insertion isn't supported if the content being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
          *
          * @param ooxml The OOXML to be inserted.
          * @param insertLocation The value must be `replace`, `start`, or `end`.
@@ -104068,6 +103843,8 @@ declare namespace Word {
          *
          * Insertion isn't supported if the document being inserted contains an ActiveX control (likely in a form field). Consider replacing such a form field with a content control or other option appropriate for your scenario.
          *
+         * Insertion isn't supported if the document being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
+         *
          * Document settings aren't preserved when inserting a document.
          *
          * @param base64File The Base64-encoded content of a .docx file.
@@ -104099,6 +103876,8 @@ declare namespace Word {
          *
          * @remarks
          * [Api set: WordApi 1.1]
+         *
+         * Insertion isn't supported if the content being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
          *
          * @param ooxml The OOXML to be inserted in to the content control.
          * @param insertLocation The value must be `replace`, `start`, or `end`. `replace` cannot be used with `richTextTable` and `richTextTableRow` content controls.
@@ -106907,13 +106686,15 @@ declare namespace Word {
         importStylesFromJson(stylesJson: string, importedStylesConflictBehavior?: "Ignore" | "Overwrite" | "CreateNew"): OfficeExtension.ClientResult<string[]>;
         /**
          * Inserts a document into the target document at a specific location with additional properties.
-                    Headers, footers, watermarks, and other section properties are copied by default.
-                    The maximum size of the document being inserted is 4 MB.
+                     Headers, footers, watermarks, and other section properties are copied by default.
+                     The maximum size of the document being inserted is 4 MB.
          *
          * @remarks
          * [Api set: WordApi 1.5]
          *
          * Insertion isn't supported if the document being inserted contains an ActiveX control (likely in a form field). Consider replacing such a form field with a content control or other option appropriate for your scenario.
+         *
+         * Insertion isn't supported if the document being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
          *
          * Document settings aren't preserved when inserting a document.
          *
@@ -107650,13 +107431,15 @@ declare namespace Word {
         getStyles(): Word.StyleCollection;
         /**
          * Inserts a document into the target document at a specific location with additional properties.
-                    Headers, footers, watermarks, and other section properties are copied by default.
-                    The maximum size of the document being inserted is 4 MB.
+                     Headers, footers, watermarks, and other section properties are copied by default.
+                     The maximum size of the document being inserted is 4 MB.
          *
          * @remarks
          * [Api set: WordApiHiddenDocument 1.5]
          *
          * Insertion isn't supported if the document being inserted contains an ActiveX control (likely in a form field). Consider replacing such a form field with a content control or other option appropriate for your scenario.
+         *
+         * Insertion isn't supported if the document being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
          *
          * Document settings aren't preserved when inserting a document.
          *
@@ -109367,6 +109150,8 @@ declare namespace Word {
          *
          * Insertion isn't supported if the document being inserted contains an ActiveX control (likely in a form field). Consider replacing such a form field with a content control or other option appropriate for your scenario.
          *
+         * Insertion isn't supported if the document being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
+         *
          * Document settings aren't preserved when inserting a document.
          *
          * @param base64File The Base64-encoded content of a .docx file.
@@ -109398,6 +109183,8 @@ declare namespace Word {
          *
          * @remarks
          * [Api set: WordApi 1.2]
+         *
+         * Insertion isn't supported if the content being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
          *
          * @param ooxml The OOXML to be inserted.
          * @param insertLocation The value must be `before` or `after`.
@@ -111931,6 +111718,8 @@ declare namespace Word {
          *
          * Insertion isn't supported if the document being inserted contains an ActiveX control (likely in a form field). Consider replacing such a form field with a content control or other option appropriate for your scenario.
          *
+         * Insertion isn't supported if the document being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
+         *
          * Document settings aren't preserved when inserting a document.
          *
          * @param base64File The Base64-encoded content of a .docx file.
@@ -111982,6 +111771,8 @@ declare namespace Word {
          *
          * @remarks
          * [Api set: WordApi 1.1]
+         *
+         * Insertion isn't supported if the content being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
          *
          * @param ooxml The OOXML to be inserted in the paragraph.
          * @param insertLocation The value must be `replace`, `start`, or `end`.
@@ -113410,6 +113201,8 @@ declare namespace Word {
          *
          * Insertion isn't supported if the document being inserted contains an ActiveX control (likely in a form field). Consider replacing such a form field with a content control or other option appropriate for your scenario.
          *
+         * Insertion isn't supported if the document being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
+         *
          * Document settings aren't preserved when inserting a document.
          *
          * @param base64File The Base64-encoded content of a .docx file.
@@ -113470,6 +113263,8 @@ declare namespace Word {
          *
          * @remarks
          * [Api set: WordApi 1.1]
+         *
+         * Insertion isn't supported if the content being inserted contains linked or external content. If it does, this method returns an `InvalidArgument` error.
          *
          * @param ooxml The OOXML to be inserted.
          * @param insertLocation The value must be `replace`, `start`, `end`, `before`, or `after`.
@@ -136094,13 +135889,6 @@ declare namespace Word {
         /** The request context associated with the object. This connects the add-in's process to the Office host application's process. */
         context: RequestContext;
         /**
-         * Gets a `ColorFormat` object that represents the background color for a patterned line.
-         *
-         * @remarks
-         * [Api set: WordApiDesktop 1.3]
-         */
-        readonly backgroundColor: Word.ColorFormat;
-        /**
          * Gets a `ColorFormat` object that represents the foreground color for the line.
          *
          * @remarks
@@ -136108,54 +135896,12 @@ declare namespace Word {
          */
         readonly foregroundColor: Word.ColorFormat;
         /**
-         * Specifies the length of the arrowhead at the beginning of the line.
-         *
-         * @remarks
-         * [Api set: WordApiDesktop 1.3]
-         */
-        beginArrowheadLength: Word.ArrowheadLength | "Mixed" | "Short" | "Medium" | "Long";
-        /**
-         * Specifies the style of the arrowhead at the beginning of the line.
-         *
-         * @remarks
-         * [Api set: WordApiDesktop 1.3]
-         */
-        beginArrowheadStyle: Word.ArrowheadStyle | "Mixed" | "None" | "Triangle" | "Open" | "Stealth" | "Diamond" | "Oval";
-        /**
-         * Specifies the width of the arrowhead at the beginning of the line.
-         *
-         * @remarks
-         * [Api set: WordApiDesktop 1.3]
-         */
-        beginArrowheadWidth: Word.ArrowheadWidth | "Mixed" | "Narrow" | "Medium" | "Wide";
-        /**
          * Specifies the dash style for the line.
          *
          * @remarks
          * [Api set: WordApiDesktop 1.3]
          */
         dashStyle: Word.LineDashStyle | "Mixed" | "Solid" | "SquareDot" | "RoundDot" | "Dash" | "DashDot" | "DashDotDot" | "LongDash" | "LongDashDot" | "LongDashDotDot" | "SysDash" | "SysDot" | "SysDashDot";
-        /**
-         * Specifies the length of the arrowhead at the end of the line.
-         *
-         * @remarks
-         * [Api set: WordApiDesktop 1.3]
-         */
-        endArrowheadLength: Word.ArrowheadLength | "Mixed" | "Short" | "Medium" | "Long";
-        /**
-         * Specifies the style of the arrowhead at the end of the line.
-         *
-         * @remarks
-         * [Api set: WordApiDesktop 1.3]
-         */
-        endArrowheadStyle: Word.ArrowheadStyle | "Mixed" | "None" | "Triangle" | "Open" | "Stealth" | "Diamond" | "Oval";
-        /**
-         * Specifies the width of the arrowhead at the end of the line.
-         *
-         * @remarks
-         * [Api set: WordApiDesktop 1.3]
-         */
-        endArrowheadWidth: Word.ArrowheadWidth | "Mixed" | "Narrow" | "Medium" | "Wide";
         /**
          * Specifies if to draw lines inside a shape.
          *
@@ -136170,13 +135916,6 @@ declare namespace Word {
          * [Api set: WordApiDesktop 1.3]
          */
         isVisible: boolean;
-        /**
-         * Specifies the pattern applied to the line.
-         *
-         * @remarks
-         * [Api set: WordApiDesktop 1.3]
-         */
-        pattern: Word.PatternType | "Mixed" | "Percent5" | "Percent10" | "Percent20" | "Percent25" | "Percent30" | "Percent40" | "Percent50" | "Percent60" | "Percent70" | "Percent75" | "Percent80" | "Percent90" | "DarkHorizontal" | "DarkVertical" | "DarkDownwardDiagonal" | "DarkUpwardDiagonal" | "SmallCheckerBoard" | "Trellis" | "LightHorizontal" | "LightVertical" | "LightDownwardDiagonal" | "LightUpwardDiagonal" | "SmallGrid" | "DottedDiamond" | "WideDownwardDiagonal" | "WideUpwardDiagonal" | "DashedUpwardDiagonal" | "DashedDownwardDiagonal" | "NarrowVertical" | "NarrowHorizontal" | "DashedVertical" | "DashedHorizontal" | "LargeConfetti" | "LargeGrid" | "HorizontalBrick" | "LargeCheckerBoard" | "SmallConfetti" | "ZigZag" | "SolidDiamond" | "DiagonalBrick" | "OutlinedDiamond" | "Plaid" | "Sphere" | "Weave" | "DottedGrid" | "Divot" | "Shingle" | "Wave" | "Horizontal" | "Vertical" | "Cross" | "DownwardDiagonal" | "UpwardDiagonal" | "DiagonalCross";
         /**
          * Specifies the line format style.
          *
@@ -146846,13 +146585,30 @@ declare namespace Word {
         owners = "Owners",
     }
     /**
-     * Represents the result of updating the sensitivity label on the document.
+     * Represents the result of an attempt to update the sensitivity label on the document.
      *
      * @remarks
      * [Api set: WordApi BETA (PREVIEW ONLY)]
      * @beta
      */
-    enum SensitivityLabelUpdateResult {
+    interface SensitivityLabelUpdateResult {
+        /**
+         * Gets the outcome status of the update attempt.
+         *
+         * @remarks
+         * [Api set: WordApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        status: Word.SensitivityLabelUpdateStatus | "Success" | "UnspecifiedFailure" | "LabelNotFound" | "DocumentReadOnly" | "InsufficientPermission" | "UnsupportedDoubleKeyEncryption" | "LabelingDisabled" | "UserNotFound" | "UnsupportedUdp" | "ParentLabelNotSupported" | "CrossTenant" | "AbacAttributesNotAllowed" | "AbacAttributesRequired" | "UnsupportedAbac" | "LabelDisabled" | "RemovingLabelNotSupported";
+    }
+    /**
+     * Represents the outcome status of an attempt to update the sensitivity label on the document.
+     *
+     * @remarks
+     * [Api set: WordApi BETA (PREVIEW ONLY)]
+     * @beta
+     */
+    enum SensitivityLabelUpdateStatus {
         /**
          * The sensitivity label was successfully updated.
          * @remarks
@@ -146875,7 +146631,7 @@ declare namespace Word {
          */
         labelNotFound = "LabelNotFound",
         /**
-         * The document is read-only and cannot be modified.
+         * The document is read-only and can't be modified.
          * @remarks
          * [Api set: WordApi BETA (PREVIEW ONLY)]
          * @beta
@@ -146903,14 +146659,14 @@ declare namespace Word {
          */
         labelingDisabled = "LabelingDisabled",
         /**
-         * The label update failed because the user's identity is not valid for applying a label.
+         * The label update failed because the user's identity couldn't be found during label application.
          * @remarks
          * [Api set: WordApi BETA (PREVIEW ONLY)]
          * @beta
          */
         userNotFound = "UserNotFound",
         /**
-         * The label update failed due to unsupported Universal Data Protection (UDP).
+         * The label update failed due to unsupported User-defined Permissions (UDP).
          * @remarks
          * [Api set: WordApi BETA (PREVIEW ONLY)]
          * @beta
@@ -152218,13 +151974,6 @@ declare namespace Word {
         /** An interface for updating data on the `LineFormat` object, for use in `lineFormat.set({ ... })`. */
         interface LineFormatUpdateData {
             /**
-            * Gets a `ColorFormat` object that represents the background color for a patterned line.
-            *
-            * @remarks
-            * [Api set: WordApiDesktop 1.3]
-            */
-            backgroundColor?: Word.Interfaces.ColorFormatUpdateData;
-            /**
             * Gets a `ColorFormat` object that represents the foreground color for the line.
             *
             * @remarks
@@ -152232,54 +151981,12 @@ declare namespace Word {
             */
             foregroundColor?: Word.Interfaces.ColorFormatUpdateData;
             /**
-             * Specifies the length of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadLength?: Word.ArrowheadLength | "Mixed" | "Short" | "Medium" | "Long";
-            /**
-             * Specifies the style of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadStyle?: Word.ArrowheadStyle | "Mixed" | "None" | "Triangle" | "Open" | "Stealth" | "Diamond" | "Oval";
-            /**
-             * Specifies the width of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadWidth?: Word.ArrowheadWidth | "Mixed" | "Narrow" | "Medium" | "Wide";
-            /**
              * Specifies the dash style for the line.
              *
              * @remarks
              * [Api set: WordApiDesktop 1.3]
              */
             dashStyle?: Word.LineDashStyle | "Mixed" | "Solid" | "SquareDot" | "RoundDot" | "Dash" | "DashDot" | "DashDotDot" | "LongDash" | "LongDashDot" | "LongDashDotDot" | "SysDash" | "SysDot" | "SysDashDot";
-            /**
-             * Specifies the length of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadLength?: Word.ArrowheadLength | "Mixed" | "Short" | "Medium" | "Long";
-            /**
-             * Specifies the style of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadStyle?: Word.ArrowheadStyle | "Mixed" | "None" | "Triangle" | "Open" | "Stealth" | "Diamond" | "Oval";
-            /**
-             * Specifies the width of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadWidth?: Word.ArrowheadWidth | "Mixed" | "Narrow" | "Medium" | "Wide";
             /**
              * Specifies if to draw lines inside a shape.
              *
@@ -152294,13 +152001,6 @@ declare namespace Word {
              * [Api set: WordApiDesktop 1.3]
              */
             isVisible?: boolean;
-            /**
-             * Specifies the pattern applied to the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            pattern?: Word.PatternType | "Mixed" | "Percent5" | "Percent10" | "Percent20" | "Percent25" | "Percent30" | "Percent40" | "Percent50" | "Percent60" | "Percent70" | "Percent75" | "Percent80" | "Percent90" | "DarkHorizontal" | "DarkVertical" | "DarkDownwardDiagonal" | "DarkUpwardDiagonal" | "SmallCheckerBoard" | "Trellis" | "LightHorizontal" | "LightVertical" | "LightDownwardDiagonal" | "LightUpwardDiagonal" | "SmallGrid" | "DottedDiamond" | "WideDownwardDiagonal" | "WideUpwardDiagonal" | "DashedUpwardDiagonal" | "DashedDownwardDiagonal" | "NarrowVertical" | "NarrowHorizontal" | "DashedVertical" | "DashedHorizontal" | "LargeConfetti" | "LargeGrid" | "HorizontalBrick" | "LargeCheckerBoard" | "SmallConfetti" | "ZigZag" | "SolidDiamond" | "DiagonalBrick" | "OutlinedDiamond" | "Plaid" | "Sphere" | "Weave" | "DottedGrid" | "Divot" | "Shingle" | "Wave" | "Horizontal" | "Vertical" | "Cross" | "DownwardDiagonal" | "UpwardDiagonal" | "DiagonalCross";
             /**
              * Specifies the line format style.
              *
@@ -160679,13 +160379,6 @@ declare namespace Word {
         /** An interface describing the data returned by calling `lineFormat.toJSON()`. */
         interface LineFormatData {
             /**
-            * Gets a `ColorFormat` object that represents the background color for a patterned line.
-            *
-            * @remarks
-            * [Api set: WordApiDesktop 1.3]
-            */
-            backgroundColor?: Word.Interfaces.ColorFormatData;
-            /**
             * Gets a `ColorFormat` object that represents the foreground color for the line.
             *
             * @remarks
@@ -160693,54 +160386,12 @@ declare namespace Word {
             */
             foregroundColor?: Word.Interfaces.ColorFormatData;
             /**
-             * Specifies the length of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadLength?: Word.ArrowheadLength | "Mixed" | "Short" | "Medium" | "Long";
-            /**
-             * Specifies the style of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadStyle?: Word.ArrowheadStyle | "Mixed" | "None" | "Triangle" | "Open" | "Stealth" | "Diamond" | "Oval";
-            /**
-             * Specifies the width of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadWidth?: Word.ArrowheadWidth | "Mixed" | "Narrow" | "Medium" | "Wide";
-            /**
              * Specifies the dash style for the line.
              *
              * @remarks
              * [Api set: WordApiDesktop 1.3]
              */
             dashStyle?: Word.LineDashStyle | "Mixed" | "Solid" | "SquareDot" | "RoundDot" | "Dash" | "DashDot" | "DashDotDot" | "LongDash" | "LongDashDot" | "LongDashDotDot" | "SysDash" | "SysDot" | "SysDashDot";
-            /**
-             * Specifies the length of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadLength?: Word.ArrowheadLength | "Mixed" | "Short" | "Medium" | "Long";
-            /**
-             * Specifies the style of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadStyle?: Word.ArrowheadStyle | "Mixed" | "None" | "Triangle" | "Open" | "Stealth" | "Diamond" | "Oval";
-            /**
-             * Specifies the width of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadWidth?: Word.ArrowheadWidth | "Mixed" | "Narrow" | "Medium" | "Wide";
             /**
              * Specifies if to draw lines inside a shape.
              *
@@ -160755,13 +160406,6 @@ declare namespace Word {
              * [Api set: WordApiDesktop 1.3]
              */
             isVisible?: boolean;
-            /**
-             * Specifies the pattern applied to the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            pattern?: Word.PatternType | "Mixed" | "Percent5" | "Percent10" | "Percent20" | "Percent25" | "Percent30" | "Percent40" | "Percent50" | "Percent60" | "Percent70" | "Percent75" | "Percent80" | "Percent90" | "DarkHorizontal" | "DarkVertical" | "DarkDownwardDiagonal" | "DarkUpwardDiagonal" | "SmallCheckerBoard" | "Trellis" | "LightHorizontal" | "LightVertical" | "LightDownwardDiagonal" | "LightUpwardDiagonal" | "SmallGrid" | "DottedDiamond" | "WideDownwardDiagonal" | "WideUpwardDiagonal" | "DashedUpwardDiagonal" | "DashedDownwardDiagonal" | "NarrowVertical" | "NarrowHorizontal" | "DashedVertical" | "DashedHorizontal" | "LargeConfetti" | "LargeGrid" | "HorizontalBrick" | "LargeCheckerBoard" | "SmallConfetti" | "ZigZag" | "SolidDiamond" | "DiagonalBrick" | "OutlinedDiamond" | "Plaid" | "Sphere" | "Weave" | "DottedGrid" | "Divot" | "Shingle" | "Wave" | "Horizontal" | "Vertical" | "Cross" | "DownwardDiagonal" | "UpwardDiagonal" | "DiagonalCross";
             /**
              * Specifies the line format style.
              *
@@ -174536,13 +174180,6 @@ declare namespace Word {
              */
             $all?: boolean;
             /**
-            * Gets a `ColorFormat` object that represents the background color for a patterned line.
-            *
-            * @remarks
-            * [Api set: WordApiDesktop 1.3]
-            */
-            backgroundColor?: Word.Interfaces.ColorFormatLoadOptions;
-            /**
             * Gets a `ColorFormat` object that represents the foreground color for the line.
             *
             * @remarks
@@ -174550,54 +174187,12 @@ declare namespace Word {
             */
             foregroundColor?: Word.Interfaces.ColorFormatLoadOptions;
             /**
-             * Specifies the length of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadLength?: boolean;
-            /**
-             * Specifies the style of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadStyle?: boolean;
-            /**
-             * Specifies the width of the arrowhead at the beginning of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            beginArrowheadWidth?: boolean;
-            /**
              * Specifies the dash style for the line.
              *
              * @remarks
              * [Api set: WordApiDesktop 1.3]
              */
             dashStyle?: boolean;
-            /**
-             * Specifies the length of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadLength?: boolean;
-            /**
-             * Specifies the style of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadStyle?: boolean;
-            /**
-             * Specifies the width of the arrowhead at the end of the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            endArrowheadWidth?: boolean;
             /**
              * Specifies if to draw lines inside a shape.
              *
@@ -174612,13 +174207,6 @@ declare namespace Word {
              * [Api set: WordApiDesktop 1.3]
              */
             isVisible?: boolean;
-            /**
-             * Specifies the pattern applied to the line.
-             *
-             * @remarks
-             * [Api set: WordApiDesktop 1.3]
-             */
-            pattern?: boolean;
             /**
              * Specifies the line format style.
              *
@@ -195564,6 +195152,47 @@ declare namespace PowerPoint {
         toJSON(): PowerPoint.Interfaces.PageSetupData;
     }
     /**
+     * Represents a single selectable value of an attribute-based access control (ABAC) attribute that can be applied to a sensitivity label.
+     *
+     * @remarks
+     * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+     * @beta
+     */
+    interface SensitivityLabelAbacAttributeValue {
+        /**
+         * Gets the display name of the ABAC attribute value. Add-ins are responsible for presenting localized user-facing UI.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        displayName: string;
+        /**
+         * Gets the recommended ordering of this ABAC value within its attribute when displayed to a user.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        displayOrder: number;
+        /**
+         * Gets the unique identifier of the ABAC attribute value. This identifier is used when applying or updating the label's ABAC attribute selections.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        id: string;
+        /**
+         * Gets whether this ABAC attribute value is active. `true` if the value is active; otherwise, `false`.
+         *
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        isActive: boolean;
+    }
+    /**
      * Represents the collection of {@link PowerPoint.SensitivityLabelDetails} objects.
      *
      * @remarks
@@ -195672,50 +195301,6 @@ declare namespace PowerPoint {
         userDefined = "UserDefined",
     }
     /**
-     * Represents the data type of an attribute-based access control (ABAC) attribute.
-     *
-     * @remarks
-     * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-     * @beta
-     */
-    enum SensitivityLabelAbacAttributeDataType {
-        /**
-         * The data type is not recognized or specified.
-         * @remarks
-         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        unknown = "Unknown",
-        /**
-         * The attribute value is a string.
-         * @remarks
-         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        stringValue = "StringValue",
-        /**
-         * The attribute value is a boolean.
-         * @remarks
-         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        booleanValue = "BooleanValue",
-        /**
-         * The attribute value is a number.
-         * @remarks
-         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        numberValue = "NumberValue",
-        /**
-         * The attribute value is a date.
-         * @remarks
-         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        dateValue = "DateValue",
-    }
-    /**
      * Represents the properties of available sensitivity labels in PowerPoint.
      *
      * @remarks
@@ -195758,7 +195343,7 @@ declare namespace PowerPoint {
          */
         readonly id: string;
         /**
-         * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update returns `SensitivityLabelUpdateResult.MissingRequiredAttributes`.
+         * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesRequired`.
          *
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
@@ -195849,13 +195434,13 @@ declare namespace PowerPoint {
         toJSON(): PowerPoint.Interfaces.SensitivityLabelDetailsData;
     }
     /**
-     * Represents the result of updating the sensitivity label on the presentation.
+     * Represents the outcome status of an attempt to update the sensitivity label on the presentation.
      *
      * @remarks
      * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
      * @beta
      */
-    enum SensitivityLabelUpdateResult {
+    enum SensitivityLabelUpdateStatus {
         /**
          * The sensitivity label was successfully updated.
          * @remarks
@@ -195878,7 +195463,7 @@ declare namespace PowerPoint {
          */
         labelNotFound = "LabelNotFound",
         /**
-         * The presentation is read-only and cannot be modified.
+         * The presentation is read-only and can't be modified.
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
@@ -195906,14 +195491,14 @@ declare namespace PowerPoint {
          */
         labelingDisabled = "LabelingDisabled",
         /**
-         * The label update failed because the user's identity is not valid for applying a label.
+         * The label update failed because the user's identity couldn't be found during label application.
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
         userNotFound = "UserNotFound",
         /**
-         * The label update failed due to unsupported User Defined Permissions (UDP).
+         * The label update failed due to unsupported User-defined Permissions (UDP).
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
@@ -195934,21 +195519,35 @@ declare namespace PowerPoint {
          */
         crossTenant = "CrossTenant",
         /**
-         * The label update failed because attribute-based access control (ABAC) is not supported in this context.
+         * ABAC attribute values were supplied, but the target label is not ABAC-enabled.
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        abacNotSupported = "AbacNotSupported",
+        abacAttributesNotAllowed = "AbacAttributesNotAllowed",
         /**
-         * The label update failed because required ABAC attribute selections were not provided.
+         * The target label is ABAC-enabled and requires attribute selections, but no ABAC attribute values were supplied.
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        missingRequiredAttributes = "MissingRequiredAttributes",
+        abacAttributesRequired = "AbacAttributesRequired",
         /**
-         * The label update failed because removing the current label is not supported.
+         * The label update failed due to unsupported attribute-based access control (ABAC).
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        unsupportedAbac = "UnsupportedAbac",
+        /**
+         * The label update failed because the specified label is disabled or not applicable to the user.
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
+         */
+        labelDisabled = "LabelDisabled",
+        /**
+         * The label update failed because removing the sensitivity label is not supported.
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
@@ -195956,73 +195555,65 @@ declare namespace PowerPoint {
         removingLabelNotSupported = "RemovingLabelNotSupported",
     }
     /**
-     * Represents a single selectable value of an attribute-based access control (ABAC) attribute that can be applied to a sensitivity label.
+     * Represents the result of an attempt to update the sensitivity label on the presentation. Carries the outcome status plus diagnostic information about why the update succeeded or failed.
      *
      * @remarks
      * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
      * @beta
      */
-    class SensitivityLabelAbacAttributeValue extends OfficeExtension.ClientObject {
-        /** The request context associated with the object. This connects the add-in's process to the Office host application's process. */
-        context: RequestContext;
+    interface SensitivityLabelUpdateResult {
         /**
-         * Gets the display name of the ABAC attribute value. Add-ins are responsible for presenting localized user-facing UI.
+         * Gets the outcome status of the update attempt.
          *
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly displayName: string;
+        status: PowerPoint.SensitivityLabelUpdateStatus | "Success" | "UnspecifiedFailure" | "LabelNotFound" | "DocumentReadOnly" | "InsufficientPermission" | "UnsupportedDoubleKeyEncryption" | "LabelingDisabled" | "UserNotFound" | "UnsupportedUdp" | "ParentLabelNotSupported" | "CrossTenant" | "AbacAttributesNotAllowed" | "AbacAttributesRequired" | "UnsupportedAbac" | "LabelDisabled" | "RemovingLabelNotSupported";
+    }
+    /**
+     * Represents the data type of an attribute-based access control (ABAC) attribute.
+     *
+     * @remarks
+     * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+     * @beta
+     */
+    enum SensitivityLabelAbacAttributeDataType {
         /**
-         * Gets the recommended ordering of this ABAC value within its attribute when displayed to a user.
-         *
+         * The data type is unknown or not recognized.
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly displayOrder: number;
+        unknown = "Unknown",
         /**
-         * Gets the unique identifier of the ABAC attribute value. This identifier is used when applying or updating the label's ABAC attribute selections.
-         *
+         * The attribute value is a string.
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly id: string;
+        stringValue = "StringValue",
         /**
-         * Gets whether this ABAC attribute value is active. `true` if the value is active; otherwise, `false`.
-         *
+         * The attribute value is Boolean.
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly isActive: boolean;
+        booleanValue = "BooleanValue",
         /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param options Provides options for which properties of the object to load.
+         * The attribute value is a number.
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
          */
-        load(options?: PowerPoint.Interfaces.SensitivityLabelAbacAttributeValueLoadOptions): PowerPoint.SensitivityLabelAbacAttributeValue;
+        numberValue = "NumberValue",
         /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param propertyNames A comma-delimited string or an array of strings that specify the properties to load.
+         * The attribute value is a date.
+         * @remarks
+         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
+         * @beta
          */
-        load(propertyNames?: string | string[]): PowerPoint.SensitivityLabelAbacAttributeValue;
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param propertyNamesAndPaths `propertyNamesAndPaths.select` is a comma-delimited string that specifies the properties to load, and `propertyNamesAndPaths.expand` is a comma-delimited string that specifies the navigation properties to load.
-         */
-        load(propertyNamesAndPaths?: {
-            select?: string;
-            expand?: string;
-        }): PowerPoint.SensitivityLabelAbacAttributeValue;
-        /**
-        * Overrides the JavaScript `toJSON()` method in order to provide more useful output when an API object is passed to `JSON.stringify()`. (`JSON.stringify`, in turn, calls the `toJSON` method of the object that's passed to it.)
-        * Whereas the original `PowerPoint.SensitivityLabelAbacAttributeValue` object is an API object, the `toJSON` method returns a plain JavaScript object (typed as `PowerPoint.Interfaces.SensitivityLabelAbacAttributeValueData`) that contains shallow copies of any loaded child properties from the original object.
-        */
-        toJSON(): PowerPoint.Interfaces.SensitivityLabelAbacAttributeValueData;
+        dateValue = "DateValue",
     }
     /**
      * Represents an attribute-based access control (ABAC) attribute available for selection on an ABAC-enabled sensitivity label.
@@ -196031,17 +195622,15 @@ declare namespace PowerPoint {
      * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
      * @beta
      */
-    class SensitivityLabelAbacAttribute extends OfficeExtension.ClientObject {
-        /** The request context associated with the object. This connects the add-in's process to the Office host application's process. */
-        context: RequestContext;
+    interface SensitivityLabelAbacAttribute {
         /**
-         * Gets the data type of this ABAC attribute.
+         * Gets the data type of the ABAC attribute.
          *
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly dataType: PowerPoint.SensitivityLabelAbacAttributeDataType | "Unknown" | "StringValue" | "BooleanValue" | "NumberValue" | "DateValue";
+        dataType: PowerPoint.SensitivityLabelAbacAttributeDataType | "Unknown" | "StringValue" | "BooleanValue" | "NumberValue" | "DateValue";
         /**
          * Gets the display name of the ABAC attribute. Add-ins are responsible for presenting localized user-facing UI.
          *
@@ -196049,7 +195638,7 @@ declare namespace PowerPoint {
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly displayName: string;
+        displayName: string;
         /**
          * Gets the recommended ordering of this ABAC attribute when displayed to a user.
          *
@@ -196057,7 +195646,7 @@ declare namespace PowerPoint {
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly displayOrder: number;
+        displayOrder: number;
         /**
          * Gets whether this ABAC attribute is active. `true` if the attribute is active; otherwise, `false`.
          *
@@ -196065,7 +195654,7 @@ declare namespace PowerPoint {
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly isActive: boolean;
+        isActive: boolean;
         /**
          * Gets whether more than one value can be selected for this ABAC attribute. `true` if multi-select; otherwise, `false`.
          *
@@ -196073,7 +195662,7 @@ declare namespace PowerPoint {
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly isMultiValued: boolean;
+        isMultiValued: boolean;
         /**
          * Gets the values that are selectable for this ABAC attribute.
          *
@@ -196081,33 +195670,7 @@ declare namespace PowerPoint {
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          */
-        readonly values: PowerPoint.SensitivityLabelAbacAttributeValue[];
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param options Provides options for which properties of the object to load.
-         */
-        load(options?: PowerPoint.Interfaces.SensitivityLabelAbacAttributeLoadOptions): PowerPoint.SensitivityLabelAbacAttribute;
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param propertyNames A comma-delimited string or an array of strings that specify the properties to load.
-         */
-        load(propertyNames?: string | string[]): PowerPoint.SensitivityLabelAbacAttribute;
-        /**
-         * Queues up a command to load the specified properties of the object. You must call `context.sync()` before reading the properties.
-         *
-         * @param propertyNamesAndPaths `propertyNamesAndPaths.select` is a comma-delimited string that specifies the properties to load, and `propertyNamesAndPaths.expand` is a comma-delimited string that specifies the navigation properties to load.
-         */
-        load(propertyNamesAndPaths?: {
-            select?: string;
-            expand?: string;
-        }): PowerPoint.SensitivityLabelAbacAttribute;
-        /**
-        * Overrides the JavaScript `toJSON()` method in order to provide more useful output when an API object is passed to `JSON.stringify()`. (`JSON.stringify`, in turn, calls the `toJSON` method of the object that's passed to it.)
-        * Whereas the original `PowerPoint.SensitivityLabelAbacAttribute` object is an API object, the `toJSON` method returns a plain JavaScript object (typed as `PowerPoint.Interfaces.SensitivityLabelAbacAttributeData`) that contains shallow copies of any loaded child properties from the original object.
-        */
-        toJSON(): PowerPoint.Interfaces.SensitivityLabelAbacAttributeData;
+        values: PowerPoint.SensitivityLabelAbacAttributeValue[];
     }
     /**
      * Provides options for `SensitivityLabel.tryToUpdate`.
@@ -196118,7 +195681,7 @@ declare namespace PowerPoint {
      */
     interface SensitivityLabelTryUpdateOptions {
         /**
-         * If provided, specifies the ABAC attributes to apply with the label.
+         * If provided, specifies the attribute-based access control (ABAC) attributes to apply with the label. Must be omitted or empty for labels that are not ABAC-enabled; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesNotAllowed`. Required when the target label is ABAC-enabled and `SensitivityLabelDetails.isAbacAttributesRequired` is `true`.
          *
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
@@ -196148,14 +195711,14 @@ declare namespace PowerPoint {
          */
         getCurrentOrNullObject(): PowerPoint.SensitivityLabelDetails;
         /**
-         * Tries to update to the provided sensitivity label on the presentation for the user.
+         * Tries to update to the provided sensitivity label on the presentation for the user. For ABAC-enabled labels, pass the desired attribute selections via `options.abacAttributes`.
          *
          * @remarks
          * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
          * @beta
          *
          * @param labelId The ID of the label to apply.
-         * @param options Options for updating the sensitivity label.
+         * @param options Optional. Additional inputs that influence the update, such as ABAC attribute selections for ABAC-enabled labels.
          * @returns The `SensitivityLabelUpdateResult` object.
          */
         tryToUpdate(labelId: string, options?: PowerPoint.SensitivityLabelTryUpdateOptions): OfficeExtension.ClientResult<PowerPoint.SensitivityLabelUpdateResult>;
@@ -198551,7 +198114,7 @@ declare namespace PowerPoint {
              */
             id?: string;
             /**
-             * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update returns `SensitivityLabelUpdateResult.MissingRequiredAttributes`.
+             * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesRequired`.
              *
              * @remarks
              * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
@@ -198614,92 +198177,6 @@ declare namespace PowerPoint {
              * @beta
              */
             tooltip?: string;
-        }
-        /** An interface describing the data returned by calling `sensitivityLabelAbacAttributeValue.toJSON()`. */
-        interface SensitivityLabelAbacAttributeValueData {
-            /**
-             * Gets the display name of the ABAC attribute value. Add-ins are responsible for presenting localized user-facing UI.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayName?: string;
-            /**
-             * Gets the recommended ordering of this ABAC value within its attribute when displayed to a user.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayOrder?: number;
-            /**
-             * Gets the unique identifier of the ABAC attribute value. This identifier is used when applying or updating the label's ABAC attribute selections.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            id?: string;
-            /**
-             * Gets whether this ABAC attribute value is active. `true` if the value is active; otherwise, `false`.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isActive?: boolean;
-        }
-        /** An interface describing the data returned by calling `sensitivityLabelAbacAttribute.toJSON()`. */
-        interface SensitivityLabelAbacAttributeData {
-            /**
-             * Gets the data type of this ABAC attribute.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            dataType?: PowerPoint.SensitivityLabelAbacAttributeDataType | "Unknown" | "StringValue" | "BooleanValue" | "NumberValue" | "DateValue";
-            /**
-             * Gets the display name of the ABAC attribute. Add-ins are responsible for presenting localized user-facing UI.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayName?: string;
-            /**
-             * Gets the recommended ordering of this ABAC attribute when displayed to a user.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayOrder?: number;
-            /**
-             * Gets whether this ABAC attribute is active. `true` if the attribute is active; otherwise, `false`.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isActive?: boolean;
-            /**
-             * Gets whether more than one value can be selected for this ABAC attribute. `true` if multi-select; otherwise, `false`.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isMultiValued?: boolean;
-            /**
-             * Gets the values that are selectable for this ABAC attribute.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            values?: PowerPoint.SensitivityLabelAbacAttributeValue[];
         }
         /** An interface describing the data returned by calling `slideCollection.toJSON()`. */
         interface SlideCollectionData {
@@ -201291,7 +200768,7 @@ declare namespace PowerPoint {
              */
             id?: boolean;
             /**
-             * For EACH ITEM in the collection: Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update returns `SensitivityLabelUpdateResult.MissingRequiredAttributes`.
+             * For EACH ITEM in the collection: Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesRequired`.
              *
              * @remarks
              * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
@@ -201392,7 +200869,7 @@ declare namespace PowerPoint {
              */
             id?: boolean;
             /**
-             * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update returns `SensitivityLabelUpdateResult.MissingRequiredAttributes`.
+             * Gets whether ABAC attribute selections are required to apply this label. If `true`, callers must supply attribute values when applying the label; otherwise the update result has a `status` of `SensitivityLabelUpdateStatus.abacAttributesRequired`.
              *
              * @remarks
              * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
@@ -201455,112 +200932,6 @@ declare namespace PowerPoint {
              * @beta
              */
             tooltip?: boolean;
-        }
-        /**
-         * Represents a single selectable value of an attribute-based access control (ABAC) attribute that can be applied to a sensitivity label.
-         *
-         * @remarks
-         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        interface SensitivityLabelAbacAttributeValueLoadOptions {
-            /**
-              Specifying `$all` for the load options loads all the scalar properties (such as `Range.address`) but not the navigational properties (such as `Range.format.fill.color`).
-             */
-            $all?: boolean;
-            /**
-             * Gets the display name of the ABAC attribute value. Add-ins are responsible for presenting localized user-facing UI.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayName?: boolean;
-            /**
-             * Gets the recommended ordering of this ABAC value within its attribute when displayed to a user.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayOrder?: boolean;
-            /**
-             * Gets the unique identifier of the ABAC attribute value. This identifier is used when applying or updating the label's ABAC attribute selections.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            id?: boolean;
-            /**
-             * Gets whether this ABAC attribute value is active. `true` if the value is active; otherwise, `false`.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isActive?: boolean;
-        }
-        /**
-         * Represents an attribute-based access control (ABAC) attribute available for selection on an ABAC-enabled sensitivity label.
-         *
-         * @remarks
-         * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-         * @beta
-         */
-        interface SensitivityLabelAbacAttributeLoadOptions {
-            /**
-              Specifying `$all` for the load options loads all the scalar properties (such as `Range.address`) but not the navigational properties (such as `Range.format.fill.color`).
-             */
-            $all?: boolean;
-            /**
-             * Gets the data type of this ABAC attribute.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            dataType?: boolean;
-            /**
-             * Gets the display name of the ABAC attribute. Add-ins are responsible for presenting localized user-facing UI.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayName?: boolean;
-            /**
-             * Gets the recommended ordering of this ABAC attribute when displayed to a user.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            displayOrder?: boolean;
-            /**
-             * Gets whether this ABAC attribute is active. `true` if the attribute is active; otherwise, `false`.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isActive?: boolean;
-            /**
-             * Gets whether more than one value can be selected for this ABAC attribute. `true` if multi-select; otherwise, `false`.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            isMultiValued?: boolean;
-            /**
-             * Gets the values that are selectable for this ABAC attribute.
-             *
-             * @remarks
-             * [Api set: PowerPointApi BETA (PREVIEW ONLY)]
-             * @beta
-             */
-            values?: boolean;
         }
         /**
          * Represents the collection of slides in the presentation.

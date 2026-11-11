@@ -19,12 +19,13 @@ import {
 } from "chromecast-caf-receiver/cast.framework.system";
 import { ControlsButton, ControlsSlot, State } from "chromecast-caf-receiver/cast.framework.ui";
 
-// Enums must remain non-const to avoid breaking projects that compile
-// with isolatedModules: true (the compiler cannot inline const enum
-// values from external .d.ts files).
-// A regular enum produces a runtime object, so it can be assigned to a
-// variable. A const enum does not, so the assignment below would fail
-// at compile time -- making these lines a regression guard.
+// CAF enums are runtime objects (on the global cast namespace), so they are
+// declared as const objects rather than const enums, which would break
+// projects that compile with isolatedModules: true (the compiler cannot inline
+// const enum values from external .d.ts files).
+// A const object has a value, so it can be assigned to a variable. A const
+// enum does not, so the assignments below would fail at compile time --
+// making these lines a regression guard.
 const _messageStreamType = StreamType;
 const _messageMessageType = MessageType;
 const _messageTrackType = TrackType;
@@ -96,6 +97,7 @@ const breakManager: BreakManager = {
     getBreakClipById: () => breakClip,
     getBreakClips: () => [breakClip],
     getBreaks: () => [adBreak],
+    getCreativeInfoByClipId: () => null,
     getPlayWatchedBreak: () => true,
     removeBreakById: () => true,
     setBreakClipLoadInterceptor: () => {},
@@ -414,3 +416,109 @@ queueItem.customData = { priority: 1 };
 queueItem.media.customData = { environment: "production" };
 breakClip.customData = { advertiser: "Umbrella Corporation" };
 lrd.customData = { isRecovering: true };
+
+// CAF enums are declared as const objects, plus union types of their values.
+// Code that can't load CAF at runtime (such as senders and test harnesses) can
+// use type-checked literals.
+const literalTrackType: TrackType = "TEXT";
+const literalStreamType: StreamType = "BUFFERED";
+const literalLoggerLevel: LoggerLevel = 1000;
+// @ts-expect-error
+const bogusTrackType: TrackType = "BOGUS";
+// @ts-expect-error
+const bogusLoggerLevel: LoggerLevel = 1;
+
+// Receivers use the runtime values on the global cast namespace.
+// $ExpectType "TEXT"
+const globalTrackType = cast.framework.messages.TrackType.TEXT;
+const globalTrackTypeAsUnion: TrackType = cast.framework.messages.TrackType.TEXT;
+
+// The type of a single member is the type of that member's value.
+const memberType: typeof TrackType.TEXT = "TEXT";
+// @ts-expect-error
+const wrongMemberType: typeof TrackType.TEXT = "AUDIO";
+
+// A mutable variable initialized from a member infers that member's literal
+// type, so annotate it with the enum type to allow other values.
+let mutableTrackType: TrackType = TrackType.TEXT;
+mutableTrackType = TrackType.AUDIO;
+
+// Listeners for a group of related events can take an array of those events,
+// and still receive the group's specific event type.
+playerManager.addEventListener([EventType.BREAK_STARTED, EventType.BREAK_ENDED], (event) => {
+    // $ExpectType BreaksEvent
+    const groupEvent = event;
+});
+
+// Events with their own listener type take a single event, not an array.
+playerManager.addEventListener(EventType.PAUSE, (event) => {
+    // $ExpectType MediaPauseEvent
+    const pauseEvent = event;
+});
+// An array of a single such event falls back to the generic overload, so its
+// listener receives the base event type.
+playerManager.addEventListener([EventType.PAUSE], (event) => {
+    // $ExpectType Event
+    const baseEvent = event;
+});
+
+// The event group types are not part of the CAF API, so they are not exported.
+// @ts-expect-error
+type PrivateGroupType = import("chromecast-caf-receiver/cast.framework").BreakEventType;
+
+// Newer API additions.
+
+// Playback stats, in the cast.framework.stats namespace.
+const playbackStats = playerManager.getStats();
+// $ExpectType StateChange[] | undefined
+const stateHistory = playbackStats.stateHistory;
+const legacyStats: import("chromecast-caf-receiver/cast.framework").Stats = playbackStats;
+
+// Raw time and seekable range, without ad break adjustments.
+const rawTime: number = playerManager.getRawCurrentTimeSec();
+const rawRangeStart: number | undefined = playerManager.getRawSeekableRange()?.start;
+
+// New event types and their specific event classes.
+playerManager.addEventListener(EventType.SESSION_DATA, (event) => {
+    // $ExpectType string
+    const sessionDataId = event.id;
+});
+playerManager.addEventListener(EventType.TIME_DRIFTED, (event) => {
+    // $ExpectType number
+    const driftedTime = event.currentMediaTime;
+});
+playerManager.addEventListener(cast.framework.events.EventType.MEDIA_FINISHED, (event) => {
+    if (event.endedReason === cast.framework.events.EndedReason.SENDER_STOPPED) {
+        // $ExpectType "SENDER_STOPPED"
+        const senderStopped = event.endedReason;
+    }
+});
+
+// Response handlers receive response information.
+const responsePlaybackConfig = new cast.framework.PlaybackConfig();
+responsePlaybackConfig.manifestHandler = (manifest, responseInfo) => {
+    // $ExpectType Record<string, string> | null
+    const responseHeaders = responseInfo.headers;
+    return manifest;
+};
+// Handlers that ignore the new parameters still work.
+responsePlaybackConfig.segmentHandler = (data) => data;
+
+// Error data details.
+const detailedErrorData = new cast.framework.messages.ErrorData(cast.framework.messages.ErrorType.LOAD_FAILED);
+detailedErrorData.severity = cast.framework.events.ErrorSeverity.UNKNOWN;
+detailedErrorData.itemId = 1;
+
+// Secondary images.
+cast.framework.ui.UiManager.getInstance().setSecondaryImage(
+    cast.framework.ui.SecondaryImagePosition.TOP_RIGHT_VIDEO_OVERLAY,
+    "https://www.foo.bar/logo.png",
+);
+
+// Creative information for break clips.
+const creativeInfo = playerManager.getBreakManager().getCreativeInfoByClipId("clip-id");
+const creativeId: string | undefined = creativeInfo?.creativeId;
+
+// Custom queues may omit onItemsReordered, which CAF only calls if present.
+// $ExpectType ((items: QueueItem[], insertBefore?: number | undefined) => void) | undefined
+const reorderCallback = qBase.onItemsReordered;
